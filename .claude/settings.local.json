@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import numpy as np; tr=np.load\\('results/train_errors.npy'\\); te=np.load\\('results/test_errors.npy'\\); print\\('train',tr.shape,tr.dtype\\); print\\('test',te.shape,te.dtype\\)\")"
+    ]
+  }
+}
