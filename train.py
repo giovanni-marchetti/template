@@ -21,20 +21,25 @@ print('Using device: ', device)
 """
 Parameters of the model
 """
-# parser = argparse.ArgumentParser()
-# parser.add_argument('--batch_size', type=int, default=64, help='batch size')
-# args = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument('--num_ep', type=int, default=100, help='number of epochs')
+parser.add_argument('--batch_size', type=int, default=64, help='batch size')
+parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
+parser.add_argument('--hidden_dim', type=int, default=5, help='hidden dimension')
+args = parser.parse_args()
 
-num_ep = 100
-batch_size = 64
+num_ep = args.num_ep
+batch_size = args.batch_size
+lr = args.lr
+hidden_dim = args.hidden_dim
+
+
 log_interval = 10
 save_interval = 10
-lr = 0.001 
-
 save_dir = "results"
 
 
-    
+
 
 """
 Initialize dataset
@@ -43,14 +48,16 @@ Initialize dataset
 # dset_test = MNIST(root='./', train=False, transform=torchvision.transforms.ToTensor(), download=True)
 dset = GaussianDataset(in_dim=10, out_dim=2)
 dset_train, dset_test = torch.utils.data.random_split(dset, [0.8, 0.2])
-train_loader = torch.utils.data.DataLoader(dset_train, batch_size=batch_size, shuffle=True) 
+train_loader = torch.utils.data.DataLoader(dset_train, batch_size=batch_size, shuffle=True)
 test_loader = torch.utils.data.DataLoader(dset_test, batch_size=batch_size, shuffle=False)
+
+
 
 
 """
 Initialize model and optimizer
 """
-model = MLP(in_dim=10, out_dim=2, hidden_dim=5, depth=3).to(device)
+model = MLP(in_dim=10, out_dim=2, hidden_dim=hidden_dim, depth=3).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 train_loss_fn = LpLoss
