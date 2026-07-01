@@ -1,20 +1,17 @@
 import torch
 from torchvision.datasets import MNIST
-import numpy as np
+from torch.utils.tensorboard import SummaryWriter
 import os
 import argparse
 
 from models import *
 from losses import *
-from datasets import * 
+from datasets import *
 
 
-# # torch.manual_seed(42)       
 torch.cuda.empty_cache()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print('Using device: ', device)
-# device = 'cpu'    
-
 
 
 
@@ -26,17 +23,23 @@ parser.add_argument('--num_ep', type=int, default=100, help='number of epochs')
 parser.add_argument('--batch_size', type=int, default=64, help='batch size')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
 parser.add_argument('--hidden_dim', type=int, default=5, help='hidden dimension')
+parser.add_argument('--seed', type=int, default=None, help='random seed')
 args = parser.parse_args()
+
 
 num_ep = args.num_ep
 batch_size = args.batch_size
 lr = args.lr
 hidden_dim = args.hidden_dim
+seed = args.seed 
+if seed != None:
+    torch.manual_seed(seed)       
 
 
-log_interval = 10
+print_interval = 10
 save_interval = 10
 save_dir = "results"
+log_dir = os.path.join(save_dir, "tensorboard")
 
 
 
@@ -61,16 +64,15 @@ model = MLP(in_dim=10, out_dim=2, hidden_dim=hidden_dim, depth=3).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 train_loss_fn = LpLoss
-test_loss_fn = LpLoss 
+test_loss_fn = LpLoss
+
+writer = SummaryWriter(log_dir=log_dir)
 
 
 
 """
 Training loop
 """
-train_errors = [] 
-test_errors = []
-
 def train(epoch, data_loader, mode='train'):
     tot_error = 0.  
 
@@ -91,11 +93,10 @@ def train(epoch, data_loader, mode='train'):
 
             tot_error += loss.item()
 
-            if batch_idx % log_interval == 0:
+            if batch_idx % print_interval == 0:
                 print(f"Train epoch: {epoch}, Batch: {batch_idx} of {len(data_loader)} Loss: {loss:.3}")
 
-        train_errors.append(tot_error / float(len(data_loader))) 
-        np.save(os.path.join(save_dir, 'train_errors.npy'), np.array(train_errors))
+        writer.add_scalar('error/train', tot_error / float(len(data_loader)), epoch)
 
 
     elif mode == 'test':
@@ -112,8 +113,7 @@ def train(epoch, data_loader, mode='train'):
 
         print(f'Test epoch: {epoch}, loss: {loss:.3}')
 
-        test_errors.append(tot_error / float(len(data_loader))) 
-        np.save(os.path.join(save_dir, 'test_errors.npy'), np.array(test_errors))
+        writer.add_scalar('error/test', tot_error / float(len(data_loader)), epoch)
 
 
 
@@ -128,3 +128,5 @@ if __name__ == "__main__":
 
         if i % save_interval == 0:
             torch.save(model.state_dict(), os.path.join(save_dir, 'checkpoints', f'checkpoint_{i}.pth'))
+
+    writer.close()

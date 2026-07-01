@@ -7,7 +7,7 @@ from models import *
 from losses import *
 from datasets import * 
 
-
+    
 torch.cuda.empty_cache()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print('Using device: ', device)
