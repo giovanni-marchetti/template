@@ -24,6 +24,7 @@ parser.add_argument('--batch_size', type=int, default=64, help='batch size')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
 parser.add_argument('--hidden_dim', type=int, default=5, help='hidden dimension')
 parser.add_argument('--seed', type=int, default=None, help='random seed')
+parser.add_argument('--compile', action='store_true', help='compile the model')
 args = parser.parse_args()
 
 
@@ -31,7 +32,7 @@ num_ep = args.num_ep
 batch_size = args.batch_size
 lr = args.lr
 hidden_dim = args.hidden_dim
-seed = args.seed 
+seed = args.seed
 if seed != None:
     torch.manual_seed(seed)       
 
@@ -65,6 +66,11 @@ Initialize model and optimizer
 """
 model = MLP(in_dim=10, out_dim=2, hidden_dim=hidden_dim, depth=3).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+raw_model = model
+if args.compile:
+    print('Compiling model with torch.compile...')
+    model = torch.compile(model)
 
 train_loss_fn = LpLoss
 test_loss_fn = LpLoss
@@ -130,6 +136,6 @@ if __name__ == "__main__":
             train(i, test_loader, mode='test')
 
         if i % save_interval == 0:
-            torch.save(model.state_dict(), os.path.join(save_dir, 'checkpoints', f'checkpoint_{i}.pth'))
+            torch.save(raw_model.state_dict(), os.path.join(save_dir, 'checkpoints', f'checkpoint_{i}.pth'))
 
     writer.close()
