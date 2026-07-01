@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 
-
+    
 class GaussianDataset(Dataset):
 
     def __init__(self, num_samples=1000, in_dim=10, out_dim=1, correlated=True):

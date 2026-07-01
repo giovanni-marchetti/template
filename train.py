@@ -9,14 +9,14 @@ from losses import *
 from datasets import *
 
 
-torch.cuda.empty_cache()
+torch.cuda.empty_cache()    
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print('Using device: ', device)
 
 
 
 """
-Parameters of the model
+Parameters of the model 
 """
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_ep', type=int, default=100, help='number of epochs')
@@ -36,6 +36,9 @@ if seed != None:
     torch.manual_seed(seed)       
 
 
+"""
+Logging and saving  
+"""
 print_interval = 10
 save_interval = 10
 save_dir = "results"
@@ -108,7 +111,7 @@ def train(epoch, data_loader, mode='train'):
 
             out = model(x)
             loss = test_loss_fn(out, y)
-            
+
             tot_error += loss.item()
 
         print(f'Test epoch: {epoch}, loss: {loss:.3}')
